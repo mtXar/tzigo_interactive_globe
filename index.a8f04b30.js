@@ -595,7 +595,7 @@ class Sketch {
     }
     addObjects() {
         this.isIcosa = true;
-        this.geometry = new _three.IcosahedronBufferGeometry(5, 256);
+        this.geometry = new _three.IcosahedronBufferGeometry(5, 81);
         // this.geometry = new THREE.SphereBufferGeometry(5, 256, 256);
         this.material = new _three.ShaderMaterial({
             extensions: {
