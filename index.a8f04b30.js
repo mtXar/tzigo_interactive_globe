@@ -524,12 +524,12 @@ parcelHelpers.defineInteropFlag(exports);
 var _three = require("three");
 var _orbitControls = require("three/examples/jsm/controls/OrbitControls");
 var _datGui = require("dat.gui");
-var _diffuseJpg = require("../img/earth/diffuse.jpg");
+var _diffuseJpg = require("../img/earth/10k/diffuse.jpg");
 var _diffuseJpgDefault = parcelHelpers.interopDefault(_diffuseJpg);
-var _bumpJpg = require("../img/earth/bump.jpg");
-var _bumpJpgDefault = parcelHelpers.interopDefault(_bumpJpg);
-var _specJpg = require("../img/earth/spec.jpg");
+var _specJpg = require("../img/earth/10k/spec.jpg");
 var _specJpgDefault = parcelHelpers.interopDefault(_specJpg);
+var _bumpJpg = require("../img/earth/10k/bump.jpg");
+var _bumpJpgDefault = parcelHelpers.interopDefault(_bumpJpg);
 var _fragmentGlsl = require("./shaders/fragment.glsl");
 var _fragmentGlslDefault = parcelHelpers.interopDefault(_fragmentGlsl);
 var _vertexGlsl = require("./shaders/vertex.glsl");
@@ -555,7 +555,7 @@ class Sketch {
         this.clock = new _three.Clock();
         this.time = 0;
         this.camera = new _three.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 1000);
-        this.camera.position.z = 18;
+        this.camera.position.z = 10;
         this.controls = new _orbitControls.OrbitControls(this.camera, this.renderer.domElement);
         this.showSettings = true;
         this.mouse = {
@@ -595,7 +595,8 @@ class Sketch {
     }
     addObjects() {
         this.isIcosa = true;
-        this.Icosa ? this.geometry = new _three.IcosahedronBufferGeometry(5, 15) : this.geometry = new _three.SphereBufferGeometry(5, 50, 50);
+        this.geometry = new _three.IcosahedronBufferGeometry(5, 256);
+        // this.geometry = new THREE.SphereBufferGeometry(5, 256, 256);
         this.material = new _three.ShaderMaterial({
             extensions: {
                 derivatives: "extension GL_OES_standard_derivatives : enable"
@@ -603,20 +604,24 @@ class Sketch {
             fragmentShader: _fragmentGlslDefault.default,
             vertexShader: _vertexGlslDefault.default,
             side: _three.DoubleSide,
-            wireframe: false,
+            wireframe: true,
             uniforms: {
                 time: {
                     value: this.time
                 },
                 resolution: {
                     value: new _three.Vector4()
+                },
+                earthDiffuse: {
+                    value: new _three.TextureLoader().load(_diffuseJpgDefault.default)
+                },
+                earthSpecular: {
+                    value: new _three.TextureLoader().load(_specJpgDefault.default)
+                },
+                earthBump: {
+                    value: new _three.TextureLoader().load(_bumpJpgDefault.default)
                 }
             }
-        });
-        this.material = new _three.MeshBasicMaterial({
-            map: new _three.TextureLoader().load(_diffuseJpgDefault.default),
-            specularMap: new _three.TextureLoader().load(_specJpgDefault.default),
-            alphaMap: new _three.TextureLoader().load(_bumpJpgDefault.default)
         });
         this.mesh = new _three.Mesh(this.geometry, this.material);
         this.scene.add(this.mesh);
@@ -657,7 +662,7 @@ const canvas = new Sketch({
     dom: document.getElementById("container")
 });
 
-},{"three":"ktPTu","three/examples/jsm/controls/OrbitControls":"7mqRv","dat.gui":"k3xQk","./shaders/fragment.glsl":"lNZh0","./shaders/vertex.glsl":"cTz87","@parcel/transformer-js/src/esmodule-helpers.js":"fD7H8","../img/earth/diffuse.jpg":"2hpEi","../img/earth/bump.jpg":"4pDBk","../img/earth/spec.jpg":"8fb1m"}],"ktPTu":[function(require,module,exports) {
+},{"three":"ktPTu","three/examples/jsm/controls/OrbitControls":"7mqRv","dat.gui":"k3xQk","./shaders/fragment.glsl":"lNZh0","./shaders/vertex.glsl":"cTz87","@parcel/transformer-js/src/esmodule-helpers.js":"fD7H8","../img/earth/10k/diffuse.jpg":"2umB4","../img/earth/10k/spec.jpg":"k2Itf","../img/earth/10k/bump.jpg":"1wTak"}],"ktPTu":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ACESFilmicToneMapping", ()=>ACESFilmicToneMapping
@@ -33822,13 +33827,13 @@ var index = {
 exports.default = index;
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"fD7H8"}],"lNZh0":[function(require,module,exports) {
-module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform float progress;\nuniform sampler2D texture1;\nuniform vec4  resolution;\n\nvarying vec2 vUv;\nvarying vec3 vPosition;\n\nfloat PI = 3.141592653;\n\nvoid main() {\n    vec3 color = vec3(vUv.x);\n\n    gl_FragColor = vec4(vUv.x , vUv.y , 0. , 1.0);\n}";
+module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform float progress;\nuniform sampler2D texture1;\nuniform sampler2D earthDiffuse;\nuniform vec4  resolution;\n\nvarying vec2 vUv;\nvarying vec3 vPosition;\n\nfloat PI = 3.141592653;\n\nvoid main() {\n    vec3 color = vec3(vUv.x);\n\n    gl_FragColor = texture2D(earthDiffuse , vUv);\n}";
 
 },{}],"cTz87":[function(require,module,exports) {
-module.exports = "#define GLSLIFY 1\nvarying vec2 vUv;\nvarying vec3 vPosition;\n\nvoid main(){\n    vec4 modelPosition = modelMatrix * vec4(position , 1.0);\n\n    vec4 viewPosition = viewMatrix * modelPosition;\n    vec4 projectedPosition = projectionMatrix * viewPosition;\n\n    gl_Position = projectedPosition;\n\n    \n    vUv = uv;\n    vPosition = position;\n    }";
+module.exports = "#define GLSLIFY 1\nuniform sampler2D earthBump;\n\nvarying vec2 vUv;\nvarying vec3 vPosition;\n\nvoid main(){\n    vec4 earthBump = texture2D(earthBump , uv);\n    vec3 newPostition = position + normal * (earthBump.rgb) * .25 ;\n    vec4 modelPosition = modelMatrix * vec4(newPostition , 1.0);\n\n    vec4 viewPosition = viewMatrix * modelPosition;\n    vec4 projectedPosition = projectionMatrix * viewPosition;\n\n    // projectedPosition.z += earthBump.a;\n\n    gl_Position = projectedPosition;\n\n    \n    vUv = uv;\n    vPosition = position;\n    }";
 
-},{}],"2hpEi":[function(require,module,exports) {
-module.exports = require('./helpers/bundle-url').getBundleURL('8twc1') + "diffuse.c9895c75.jpg" + "?" + Date.now();
+},{}],"2umB4":[function(require,module,exports) {
+module.exports = require('./helpers/bundle-url').getBundleURL('8twc1') + "diffuse.7042b09a.jpg" + "?" + Date.now();
 
 },{"./helpers/bundle-url":"jMDco"}],"jMDco":[function(require,module,exports) {
 "use strict";
@@ -33865,11 +33870,11 @@ exports.getBundleURL = getBundleURLCached;
 exports.getBaseURL = getBaseURL;
 exports.getOrigin = getOrigin;
 
-},{}],"4pDBk":[function(require,module,exports) {
-module.exports = require('./helpers/bundle-url').getBundleURL('8twc1') + "bump.198d6636.jpg" + "?" + Date.now();
+},{}],"k2Itf":[function(require,module,exports) {
+module.exports = require('./helpers/bundle-url').getBundleURL('8twc1') + "spec.854bb08a.jpg" + "?" + Date.now();
 
-},{"./helpers/bundle-url":"jMDco"}],"8fb1m":[function(require,module,exports) {
-module.exports = require('./helpers/bundle-url').getBundleURL('8twc1') + "spec.dde44742.jpg" + "?" + Date.now();
+},{"./helpers/bundle-url":"jMDco"}],"1wTak":[function(require,module,exports) {
+module.exports = require('./helpers/bundle-url').getBundleURL('8twc1') + "bump.7d0fbe7c.jpg" + "?" + Date.now();
 
 },{"./helpers/bundle-url":"jMDco"}]},["7OYGn","5AKj5"], "5AKj5", "parcelRequire7e89")
 
